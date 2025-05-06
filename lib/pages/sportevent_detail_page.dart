@@ -3,6 +3,7 @@ import '../models/sportevent_model.dart';
 
 class SporteventDetailPage extends StatelessWidget {
   final Sportevent event;
+
   const SporteventDetailPage({super.key, required this.event});
 
   @override
@@ -14,13 +15,16 @@ class SporteventDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Descripción: ${event.description}"),
-            Text("Ubicación: ${event.location}"),
-            Text("Inicio: ${event.startDate}"),
-            Text("Fin: ${event.endDate}"),
-            Text("Máx. Participantes: ${event.maxParticipants}"),
-            Text("¿Al aire libre?: ${event.isOutdoor ? 'Sí' : 'No'}"),
-            Text("Registro abierto: ${event.registrationOpen ? 'Sí' : 'No'}"),
+            Text('Descripción: ${event.description}'),
+            const SizedBox(height: 8),
+            Text('Ubicación: ${event.location}'),
+            const SizedBox(height: 8),
+            Text('Fecha inicio: ${DateTime.parse(event.startDate).toLocal()}'),
+            Text('Fecha fin: ${DateTime.parse(event.endDate).toLocal()}'),
+            const SizedBox(height: 8),
+            Text('Participantes máximos: ${event.maxParticipants}'),
+            Text('¿Es al aire libre? ${event.isOutdoor ? 'Sí' : 'No'}'),
+            Text('¿Inscripción abierta? ${event.registrationOpen ? 'Sí' : 'No'}'),
           ],
         ),
       ),

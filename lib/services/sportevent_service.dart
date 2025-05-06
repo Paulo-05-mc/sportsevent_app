@@ -21,9 +21,9 @@ class SporteventService {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(event.toJson()),
     );
-    if (response.statusCode != 201) {
-      throw Exception('Error al crear evento');
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw Exception('Error al crear evento: ${response.body}');
     }
   }
-  
 }

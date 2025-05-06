@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/sportevent_service.dart';
 import '../models/sportevent_model.dart';
+import '../services/sportevent_service.dart';
 
 class CreateSporteventPage extends StatefulWidget {
   const CreateSporteventPage({super.key});
@@ -13,19 +13,54 @@ class _CreateSporteventPageState extends State<CreateSporteventPage> {
   final _formKey = GlobalKey<FormState>();
   final _service = SporteventService();
 
-  String title = '';
-  String description = '';
-  String location = '';
-  String startDate = '';
-  String endDate = '';
-  int maxParticipants = 0;
-  bool isOutdoor = true;
-  bool registrationOpen = true;
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _startDateController = TextEditingController();
+  final TextEditingController _endDateController = TextEditingController();
+  final TextEditingController _maxParticipantsController = TextEditingController();
+  bool _isOutdoor = false;
+  bool _registrationOpen = false;
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _locationController.dispose();
+    _startDateController.dispose();
+    _endDateController.dispose();
+    _maxParticipantsController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      final newEvent = Sportevent(
+        id: 0,
+        title: _titleController.text,
+        description: _descriptionController.text,
+        location: _locationController.text,
+        startDate: _startDateController.text,
+        endDate: _endDateController.text,
+        maxParticipants: int.parse(_maxParticipantsController.text),
+        isOutdoor: _isOutdoor,
+        registrationOpen: _registrationOpen,
+      );
+
+      try {
+        await _service.createEvent(newEvent);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Evento creado correctamente')));
+        Navigator.pop(context, true);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Nuevo Evento')),
+      appBar: AppBar(title: const Text('Crear Evento')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -33,68 +68,51 @@ class _CreateSporteventPageState extends State<CreateSporteventPage> {
           child: ListView(
             children: [
               TextFormField(
+                controller: _titleController,
                 decoration: const InputDecoration(labelText: 'Título'),
-                onChanged: (val) => title = val,
-                validator: (val) => val!.isEmpty ? 'Ingrese título' : null,
+                validator: (value) => value!.isEmpty ? 'Ingrese un título' : null,
               ),
               TextFormField(
+                controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Descripción'),
-                onChanged: (val) => description = val,
+                validator: (value) => value!.isEmpty ? 'Ingrese una descripción' : null,
               ),
               TextFormField(
+                controller: _locationController,
                 decoration: const InputDecoration(labelText: 'Ubicación'),
-                onChanged: (val) => location = val,
+                validator: (value) => value!.isEmpty ? 'Ingrese una ubicación' : null,
               ),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Fecha inicio (YYYY-MM-DDTHH:MM:SS)'),
-                onChanged: (val) => startDate = val,
+                controller: _startDateController,
+                decoration: const InputDecoration(labelText: 'Fecha de inicio (YYYY-MM-DDTHH:MM:SS)'),
+                validator: (value) => value!.isEmpty ? 'Ingrese la fecha de inicio' : null,
               ),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Fecha fin (YYYY-MM-DDTHH:MM:SS)'),
-                onChanged: (val) => endDate = val,
+                controller: _endDateController,
+                decoration: const InputDecoration(labelText: 'Fecha de fin (YYYY-MM-DDTHH:MM:SS)'),
+                validator: (value) => value!.isEmpty ? 'Ingrese la fecha de fin' : null,
               ),
               TextFormField(
+                controller: _maxParticipantsController,
                 decoration: const InputDecoration(labelText: 'Máx. Participantes'),
                 keyboardType: TextInputType.number,
-                onChanged: (val) => maxParticipants = int.tryParse(val) ?? 0,
+                validator: (value) => value!.isEmpty ? 'Ingrese un número' : null,
               ),
               SwitchListTile(
-                title: const Text('Es al aire libre'),
-                value: isOutdoor,
-                onChanged: (val) => setState(() => isOutdoor = val),
+                title: const Text('¿Es al aire libre?'),
+                value: _isOutdoor,
+                onChanged: (value) => setState(() => _isOutdoor = value),
               ),
               SwitchListTile(
-                title: const Text('Inscripción abierta'),
-                value: registrationOpen,
-                onChanged: (val) => setState(() => registrationOpen = val),
+                title: const Text('¿Inscripción abierta?'),
+                value: _registrationOpen,
+                onChanged: (value) => setState(() => _registrationOpen = value),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    final newEvent = Sportevent(
-                      id: 0, // Se ignora al enviar
-                      title: title,
-                      description: description,
-                      location: location,
-                      startDate: startDate,
-                      endDate: endDate,
-                      maxParticipants: maxParticipants,
-                      isOutdoor: isOutdoor,
-                      registrationOpen: registrationOpen,
-                    );
-                    try {
-                      await _service.createEvent(newEvent);
-                      Navigator.pop(context, true); // vuelve a la página anterior
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Error al crear evento')),
-                      );
-                    }
-                  }
-                },
+                onPressed: _submitForm,
                 child: const Text('Crear Evento'),
-              )
+              ),
             ],
           ),
         ),
